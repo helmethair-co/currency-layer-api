@@ -15,28 +15,47 @@ object ParamFields {
     const val FROM = "from"
     const val TO = "to"
     const val AMOUNT = "amount"
+    const val CURRENCIES = "currencies"
+    const val SOURCE = "source"
 }
 
 object Endpoints {
     const val LIST = "list"
+    const val LIVE = "live"
     const val CONVERT = "convert"
 }
 
+interface Response {
+    val success: Boolean
+    val terms: String
+    val privacy: String
+}
+
 data class ListResponse(
-    val success: Boolean,
-    val terms: String,
-    val privacy: String,
+    override val success: Boolean,
+    override val terms: String,
+    override val privacy: String,
     val currencies: Map<String, String>
-)
+): Response
 
 data class ConvertResponse(
-    val success: Boolean,
-    val terms: String,
-    val privacy: String,
+    override val success: Boolean,
+    override val terms: String,
+    override val privacy: String,
     val query: ConvertQuery,
     val info: ConvertInfo,
     val result: Double
-)
+): Response
+
+data class LiveResponse(
+    override val success: Boolean,
+    override val terms: String,
+    override val privacy: String,
+    val timestamp: Long,
+    val source: String?,
+    val quotes: Map<String, Double>
+): Response
+
 
 data class ConvertQuery(
     val from: String,
@@ -44,6 +63,10 @@ data class ConvertQuery(
     val amount: Double
 )
 
+data class LiveQuery(
+    val source: String?,
+    val currencies: String?
+)
 
 data class ConvertInfo(
     val timestamp: Long,
@@ -85,13 +108,13 @@ class CurrencyLayerApi(private val accessKey: String) {
         }
     }
 
-    fun convert(query: ConvertQuery): String {
+    fun convert(from: String, to: String, amount: Double): String {
         val (request, response, result) = Endpoints.CONVERT.httpGet(
             parameters = listOf(
                 ParamFields.ACCESS_KEY to accessKey,
-                ParamFields.FROM to query.from,
-                ParamFields.TO to query.to,
-                ParamFields.AMOUNT to query.amount
+                ParamFields.FROM to from,
+                ParamFields.TO to to,
+                ParamFields.AMOUNT to amount
             ))
             .responseString()
 
@@ -105,14 +128,63 @@ class CurrencyLayerApi(private val accessKey: String) {
         }
     }
 
-    fun convertAsync(query: ConvertQuery): CompletableFuture<ConvertResponse> {
+    fun convertAsync(from: String, to: String, amount: Double): CompletableFuture<ConvertResponse> {
         return calculateAsync(CompletableFuture<ConvertResponse>()) { future ->
-            convertAsyncBlock(future, query)
+            convertAsyncBlock(future, ConvertQuery(from, to, amount))
         }
+    }
+
+    fun live(currencies: String? = null, source: String? = null): LiveResponse {
+        val (request, response, result) = Endpoints.LIVE.httpGet(
+                parameters = createLiveParams(currencies, source))
+            .responseString()
+
+        when (result) {
+            is Result.Success -> {
+                return jsonMapper.readValue(result.value, jacksonTypeRef<LiveResponse>())
+            }
+            is Result.Failure -> {
+                throw result.error
+            }
+        }
+    }
+
+    fun liveAsync(currencies: String? = null, source: String? = null): CompletableFuture<LiveResponse> {
+        return calculateAsync(CompletableFuture<LiveResponse>()) { future ->
+            liveAsyncBlock(future, currencies, source)
+        }
+    }
+
+    private fun createLiveParams(currencies: String? = null, source: String? = null): List<Pair<String, String?>> {
+        val params = mutableListOf(
+                ParamFields.ACCESS_KEY to accessKey,
+                ParamFields.SOURCE to source
+        )
+        if (currencies != null) params.add(ParamFields.CURRENCIES to currencies)
+        if (source != null) params.add(ParamFields.SOURCE to source)
+        return params
     }
 
     private fun <T>calculateAsync(future: CompletableFuture<T>, block: (future: CompletableFuture<T>) -> CompletableFuture<T>): CompletableFuture<T> {
         cachedThreadPool.submit { block(future) }
+        return future
+    }
+
+    private fun liveAsyncBlock(future: CompletableFuture<LiveResponse>, currencies: String? = null, source: String? = null): CompletableFuture<LiveResponse> {
+        Endpoints.LIVE.httpGet(
+                parameters = createLiveParams(currencies, source)
+            )
+            .responseString { request, response, result ->
+                when (result) {
+                    is Result.Success -> {
+                        val resultObject = jsonMapper.readValue<LiveResponse>(result.get(), jacksonTypeRef<LiveResponse>())
+                        future.complete(resultObject)
+                    }
+                    is Result.Failure -> {
+                        future.completeExceptionally(result.error)
+                    }
+                }
+            }
         return future
     }
 
@@ -124,8 +196,8 @@ class CurrencyLayerApi(private val accessKey: String) {
                 .responseString { request, response, result ->
                     when (result) {
                         is Result.Success -> {
-                            val listObject = jsonMapper.readValue<ListResponse>(result.get(), jacksonTypeRef<ListResponse>())
-                            future.complete(listObject)
+                            val resultObject = jsonMapper.readValue<ListResponse>(result.get(), jacksonTypeRef<ListResponse>())
+                            future.complete(resultObject)
                         }
                         is Result.Failure -> {
                             throw result.error
@@ -146,8 +218,8 @@ class CurrencyLayerApi(private val accessKey: String) {
             .responseString { request, response, result ->
                 when (result) {
                     is Result.Success -> {
-                        val convertObject = jsonMapper.readValue<ConvertResponse>(result.get(), jacksonTypeRef<ConvertResponse>())
-                        future.complete(convertObject)
+                        val resultObject = jsonMapper.readValue<ConvertResponse>(result.get(), jacksonTypeRef<ConvertResponse>())
+                        future.complete(resultObject)
                     }
                     is Result.Failure -> {
                         throw result.error
