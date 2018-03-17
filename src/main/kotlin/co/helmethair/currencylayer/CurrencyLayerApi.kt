@@ -236,7 +236,7 @@ class CurrencyLayerApi(private val accessKey: String) {
     private fun historicalAsyncBlock(future: CompletableFuture<HistoricalResponse>, date: Date, currencies: String? = null, source: String? = null): CompletableFuture<HistoricalResponse> {
         val params = createLiveParams(currencies, source)
         params.add(ParamFields.DATE to dateFormat.format(date))
-        Endpoints.LIVE
+        Endpoints.HISTORICAL
             .httpGet(parameters = params)
             .responseString { request, response, result ->
                 when (result) {
