@@ -8,6 +8,7 @@ repositories {
 dependencies {
     compile 'org.slf4j:slf4j-api:1.7.21'
     compile 'com.github.kittinunf.fuel:fuel:1.12.1'
+    compile group: 'com.fasterxml.jackson.module', name: 'jackson-module-kotlin', version: "$jackson_version"
     testCompile 'junit:junit:4.12'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
@@ -33,3 +34,6 @@ compileTestKotlin {
     }
 }
 
+task wrapper(type: Wrapper) {
+    distributionUrl = "https://services.gradle.org/distributions/gradle-$gradleVersion-all.zip"
+}
