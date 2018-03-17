@@ -61,7 +61,6 @@ data class LiveResponse(
     val quotes: Map<String, Double>
 ): Response
 
-
 data class HistoricalResponse(
         override val success: Boolean,
         override val terms: String,
@@ -74,16 +73,10 @@ data class HistoricalResponse(
         val quotes: Map<String, Double>
 ): Response
 
-
 data class ConvertQuery(
     val from: String,
     val to: String,
     val amount: Double
-)
-
-data class LiveQuery(
-    val source: String?,
-    val currencies: String?
 )
 
 data class ConvertInfo(
