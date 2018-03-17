@@ -20,7 +20,7 @@ object ParamFields {
     const val AMOUNT = "amount"
     const val CURRENCIES = "currencies"
     const val SOURCE = "source"
-    const val HISTORICAL = "historical"
+    const val DATE = "date"
 }
 
 object Endpoints {
@@ -180,7 +180,8 @@ class CurrencyLayerApi(private val accessKey: String) {
 
     fun historical(date: Date, currencies: String? = null, source: String? = null): HistoricalResponse {
         val params = createLiveParams(currencies, source)
-        params.add(ParamFields.HISTORICAL to dateFormat.format(date))
+        println(dateFormat.format(date))
+        params.add(ParamFields.DATE to dateFormat.format(date))
         val (request, response, result) = Endpoints.HISTORICAL
             .httpGet(parameters = params)
             .responseString()
@@ -234,7 +235,7 @@ class CurrencyLayerApi(private val accessKey: String) {
 
     private fun historicalAsyncBlock(future: CompletableFuture<HistoricalResponse>, date: Date, currencies: String? = null, source: String? = null): CompletableFuture<HistoricalResponse> {
         val params = createLiveParams(currencies, source)
-        params.add(ParamFields.HISTORICAL to dateFormat.format(date))
+        params.add(ParamFields.DATE to dateFormat.format(date))
         Endpoints.LIVE
             .httpGet(parameters = params)
             .responseString { request, response, result ->
