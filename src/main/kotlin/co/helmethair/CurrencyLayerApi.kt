@@ -200,7 +200,7 @@ class CurrencyLayerApi(private val accessKey: String) {
                             future.complete(resultObject)
                         }
                         is Result.Failure -> {
-                            throw result.error
+                            future.completeExceptionally(result.error)
                         }
                     }
                 }
@@ -222,7 +222,7 @@ class CurrencyLayerApi(private val accessKey: String) {
                         future.complete(resultObject)
                     }
                     is Result.Failure -> {
-                        throw result.error
+                        future.completeExceptionally(result.error)
                     }
                 }
             }
