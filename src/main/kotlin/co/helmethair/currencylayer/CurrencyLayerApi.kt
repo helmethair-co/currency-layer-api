@@ -1,4 +1,4 @@
-package co.helmethair
+package co.helmethair.currencylayer
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.databind.ObjectMapper
