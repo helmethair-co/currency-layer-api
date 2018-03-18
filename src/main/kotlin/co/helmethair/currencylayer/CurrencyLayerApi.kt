@@ -1,10 +1,13 @@
 package co.helmethair.currencylayer
 
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
+import com.github.kittinunf.fuel.core.Request
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
 import java.text.SimpleDateFormat
@@ -62,15 +65,15 @@ data class LiveResponse(
 ): Response
 
 data class HistoricalResponse(
-        override val success: Boolean,
-        override val terms: String,
-        override val privacy: String,
-        val historical: Boolean,
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-        val date: Date,
-        val timestamp: Long,
-        val source: String?,
-        val quotes: Map<String, Double>
+    override val success: Boolean,
+    override val terms: String,
+    override val privacy: String,
+    val historical: Boolean,
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    val date: Date,
+    val timestamp: Long,
+    val source: String?,
+    val quotes: Map<String, Double>
 ): Response
 
 data class ConvertQuery(
@@ -173,7 +176,6 @@ class CurrencyLayerApi(private val accessKey: String) {
 
     fun historical(date: Date, currencies: String? = null, source: String? = null): HistoricalResponse {
         val params = createLiveParams(currencies, source)
-        println(dateFormat.format(date))
         params.add(ParamFields.DATE to dateFormat.format(date))
         val (request, response, result) = Endpoints.HISTORICAL
             .httpGet(parameters = params)
@@ -209,20 +211,24 @@ class CurrencyLayerApi(private val accessKey: String) {
         return future
     }
 
+    private fun <T>createHandleResponse(future: CompletableFuture<T>, typeRef: TypeReference<T>): (Request, com.github.kittinunf.fuel.core.Response, Result<String, FuelError>) -> Unit {
+        return { request, response, result ->
+            when (result) {
+                is Result.Success -> {
+                    val resultObject = jsonMapper.readValue<T>(result.get(), typeRef)
+                    future.complete(resultObject)
+                }
+                is Result.Failure -> {
+                    future.completeExceptionally(result.error)
+                }
+            }
+        }
+    }
+
     private fun liveAsyncBlock(future: CompletableFuture<LiveResponse>, currencies: String? = null, source: String? = null): CompletableFuture<LiveResponse> {
         Endpoints.LIVE
             .httpGet(parameters = createLiveParams(currencies, source))
-            .responseString { request, response, result ->
-                when (result) {
-                    is Result.Success -> {
-                        val resultObject = jsonMapper.readValue<LiveResponse>(result.get(), jacksonTypeRef<LiveResponse>())
-                        future.complete(resultObject)
-                    }
-                    is Result.Failure -> {
-                        future.completeExceptionally(result.error)
-                    }
-                }
-            }
+            .responseString(handler = createHandleResponse(future, jacksonTypeRef<LiveResponse>()))
         return future
     }
 
@@ -231,34 +237,16 @@ class CurrencyLayerApi(private val accessKey: String) {
         params.add(ParamFields.DATE to dateFormat.format(date))
         Endpoints.HISTORICAL
             .httpGet(parameters = params)
-            .responseString { request, response, result ->
-                when (result) {
-                    is Result.Success -> {
-                        val resultObject = jsonMapper.readValue<HistoricalResponse>(result.get(), jacksonTypeRef<HistoricalResponse>())
-                        future.complete(resultObject)
-                    }
-                    is Result.Failure -> {
-                        future.completeExceptionally(result.error)
-                    }
-                }
-            }
+            .responseString(handler = createHandleResponse(future, jacksonTypeRef<HistoricalResponse>()))
+
         return future
     }
 
     private fun listAsyncBlock(future: CompletableFuture<ListResponse>): CompletableFuture<ListResponse> {
         Endpoints.LIST
             .httpGet(parameters = listOf(ParamFields.ACCESS_KEY to accessKey))
-            .responseString { request, response, result ->
-                when (result) {
-                    is Result.Success -> {
-                        val resultObject = jsonMapper.readValue<ListResponse>(result.get(), jacksonTypeRef<ListResponse>())
-                        future.complete(resultObject)
-                    }
-                    is Result.Failure -> {
-                        future.completeExceptionally(result.error)
-                    }
-                }
-            }
+            .responseString(handler = createHandleResponse(future, jacksonTypeRef<ListResponse>()))
+
         return future
     }
 
@@ -272,17 +260,8 @@ class CurrencyLayerApi(private val accessKey: String) {
                     ParamFields.AMOUNT to query.amount
                 )
             )
-            .responseString { request, response, result ->
-                when (result) {
-                    is Result.Success -> {
-                        val resultObject = jsonMapper.readValue<ConvertResponse>(result.get(), jacksonTypeRef<ConvertResponse>())
-                        future.complete(resultObject)
-                    }
-                    is Result.Failure -> {
-                        future.completeExceptionally(result.error)
-                    }
-                }
-            }
+            .responseString(handler = createHandleResponse(future, jacksonTypeRef<ConvertResponse>()))
+
         return future
     }
 }
