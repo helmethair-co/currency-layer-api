@@ -87,17 +87,14 @@ data class ConvertInfo(
     val quote: Double
 )
 
-class CurrencyLayerApi(private val accessKey: String) {
+class CurrencyLayerApi(private val accessKey: String, private val useSecureConnection: Boolean) {
     private val jsonMapper: ObjectMapper = ObjectMapper().registerKotlinModule()
     private val cachedThreadPool = Executors.newCachedThreadPool()
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd")
 
-    companion object {
-        private const val BASE_URL = "http://apilayer.net/api/"
-    }
-
     init {
-        FuelManager.instance.basePath = BASE_URL
+        val protocol = if (useSecureConnection) "https" else "http"
+        FuelManager.instance.basePath = "$protocol://apilayer.net/api/"
     }
 
     fun list(): ListResponse {
