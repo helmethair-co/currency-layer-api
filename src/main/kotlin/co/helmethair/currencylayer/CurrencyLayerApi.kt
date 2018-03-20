@@ -88,6 +88,9 @@ data class ConvertInfo(
     val quote: Double
 )
 
+/**
+ * Client API for wrapping the JSON API of currencylayer.com. [useSecureConnection] is available for paying users.
+ */
 class CurrencyLayerApi(
     private val accessKey: String,
     private val useSecureConnection: Boolean,
@@ -101,46 +104,78 @@ class CurrencyLayerApi(
         FuelManager.instance.basePath = "$protocol://apilayer.net/api/"
     }
 
+    /**
+     * Returns a [ListResponse] object with all the supported currencies.
+     */
     fun list(): ListResponse {
         val (request, response, result) = listRequest().responseString()
         return handleResponse(result, jacksonTypeRef<ListResponse>())
     }
 
+    /**
+     * The async version of the [list] function, returning a [CompletableFuture], call the .get()
+     * method when you need the result.
+     */
     fun listAsync(): CompletableFuture<ListResponse> {
         return calculateAsync(CompletableFuture<ListResponse>()) { future ->
             listAsyncBlock(future)
         }
     }
 
+    /**
+     * Returns a [ConvertResponse] object with result for a [from] and a [to] currency in the given [amount].
+     */
     fun convert(from: String, to: String, amount: Double): ConvertResponse {
         val (request, response, result) = convertRequest(from, to, amount).responseString()
         return handleResponse(result, jacksonTypeRef<ConvertResponse>())
 
     }
 
+    /**
+     * The async version of the [convert] function, returning a [CompletableFuture], call the .get()
+     * method when you need the result.
+     */
     fun convertAsync(from: String, to: String, amount: Double): CompletableFuture<ConvertResponse> {
         return calculateAsync(CompletableFuture<ConvertResponse>()) { future ->
             convertAsyncBlock(future, from, to, amount)
         }
     }
 
+    /**
+     * Returns a [LiveResponse] object containing the live exchange rates for a given [source] currency.
+     * The default value is "USD". The number of [currencies] can be limited by providing a string
+     * containing the currencies separated by a comma: "EUR,GBP,HUF".
+     */
     fun live(currencies: String? = null, source: String? = null): LiveResponse {
         val (request, response, result) = liveRequest(currencies, source).responseString()
         return handleResponse(result, jacksonTypeRef<LiveResponse>())
     }
 
+    /**
+     * The async version of the [live] function, returning a [CompletableFuture], call the .get()
+     * method when you need the result.
+     */
     fun liveAsync(currencies: String? = null, source: String? = null): CompletableFuture<LiveResponse> {
         return calculateAsync(CompletableFuture<LiveResponse>()) { future ->
             liveAsyncBlock(future, currencies, source)
         }
     }
 
+    /**
+     * Returns a [HistoricalResponse] object containing the historical exchange rates for a given [source] currency,
+     * in a specific [date]. The default value is "USD". The number of [currencies] can be limited by providing a
+     * string containing the currencies separated by a comma: "EUR,GBP,HUF".
+     */
     fun historical(date: Date, currencies: String? = null, source: String? = null): HistoricalResponse {
         val (request, response, result) = historicalRequest(date, currencies, source).responseString()
         return handleResponse(result, jacksonTypeRef<HistoricalResponse>())
 
     }
 
+    /**
+     * The async version of the [historical] function, returning a [CompletableFuture], call the .get()
+     * method when you need the result.
+     */
     fun historicalAsync(date: Date, currencies: String? = null, source: String? = null): CompletableFuture<HistoricalResponse> {
         return calculateAsync(CompletableFuture<HistoricalResponse>()) { future ->
             historicalAsyncBlock(future, date, currencies, source)
