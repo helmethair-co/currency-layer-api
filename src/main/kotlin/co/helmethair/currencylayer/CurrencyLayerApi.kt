@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 
-object ParamFields {
+private object ParamFields {
     const val ACCESS_KEY = "access_key"
     const val FROM = "from"
     const val TO = "to"
@@ -27,14 +27,14 @@ object ParamFields {
     const val DATE = "date"
 }
 
-object Endpoints {
+private object Endpoints {
     const val LIST = "list"
     const val LIVE = "live"
     const val CONVERT = "convert"
     const val HISTORICAL = "historical"
 }
 
-interface Response {
+private interface Response {
     val success: Boolean
     val terms: String
     val privacy: String
