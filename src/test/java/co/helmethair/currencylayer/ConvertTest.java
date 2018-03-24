@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
 
 class ConvertTest {
     private CurrencyLayerApi currencyLayerApi = new CurrencyLayerApi("", true, Executors.newCachedThreadPool());
-    private String SUCCESSFUL_RESPONSE_MESSAGE = "{\"success\":true,\"terms\":\"https://currencylayer.com/terms\",\"privacy\":\"https://currencylayer.com/privacy\",\"currencies\":{\"AED\":\"United Arab Emirates Dirham\",\"AFN\":\"Afghan Afghani\",\"ALL\":\"Albanian Lek\"}}";
+    private String SUCCESSFUL_RESPONSE_MESSAGE = "{\"success\":true,\"terms\":\"https:\\/\\/currencylayer.com\\/terms\",\"privacy\":\"https:\\/\\/currencylayer.com\\/privacy\",\"query\":{\"from\":\"USD\",\"to\":\"HUF\",\"amount\":10},\"info\":{\"timestamp\":1521895162,\"quote\":253.070007},\"result\":2530.70007}";
 
     @Test
     @DisplayName("Convert Success Test")
