@@ -205,8 +205,7 @@ class CurrencyLayerApi(
 
     private fun liveRequest(currencies: String? = null, source: String? = null): Request {
         val params = mutableListOf(
-            ParamFields.ACCESS_KEY to accessKey,
-            ParamFields.SOURCE to source
+            ParamFields.ACCESS_KEY to accessKey
         )
         if (currencies != null) params.add(ParamFields.CURRENCIES to currencies)
         if (source != null) params.add(ParamFields.SOURCE to source)
@@ -216,7 +215,6 @@ class CurrencyLayerApi(
     private fun historicalRequest(date: Date, currencies: String? = null, source: String? = null): Request {
         val params = mutableListOf(
             ParamFields.ACCESS_KEY to accessKey,
-            ParamFields.SOURCE to source,
             ParamFields.DATE to dateFormat.format(date)
         )
         if (currencies != null) params.add(ParamFields.CURRENCIES to currencies)
