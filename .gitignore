@@ -5,3 +5,6 @@ out/
 local/
 
 *.iml
+
+// generated file for bintray
+descriptor.json

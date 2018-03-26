@@ -1,0 +1,33 @@
+{
+    "files": [
+        {
+            "includePattern": "build/libs/(.*)",
+            "uploadPattern": "co/helmethair/currency-layer-api/0.1.0/$1"
+        }
+    ],
+    "package": {
+        "desc": "Client API for http://currencylayer.com written in kotlin",
+        "issue_tracker_url": "https://github.com/helmethair-co/currency-layer-api/issues",
+        "labels": [
+            "kotlin",
+            "client-api",
+            "currency-layer"
+        ],
+        "licenses": [
+            "Apache-2.0"
+        ],
+        "name": "currency-layer-api",
+        "public_download_numbers": false,
+        "public_stats": false,
+        "repo": "helmethair-co-oss",
+        "subject": "",
+        "vcs_url": "https://github.com/helmethair-co/currency-layer-api.git",
+        "website_url": "https://helmethair.co"
+    },
+    "publish": true,
+    "version": {
+        "gpgSign": false,
+        "name": "0.1.0",
+        "released": "2018-03-25"
+    }
+}
