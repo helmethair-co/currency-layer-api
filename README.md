@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/helmethair-co/currency-layer-api.svg?branch=master)](https://travis-ci.org/helmethair-co/currency-layer-api)
 # currency-layer-api
 
 A Java client API for http://currencylayer.com written in [kotlin](http://kotlinlang.org/)
