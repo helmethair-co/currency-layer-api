@@ -5,6 +5,7 @@ before_deploy:
 - "./gradlew generateBintrayDescriptor"
 - "./gradlew generatePomFileForMavenPublication"
 deploy:
+  skip-cleanup: true
   provider: bintray
   file: descriptor.json
   user: "$BINTRAY_API_USER"
