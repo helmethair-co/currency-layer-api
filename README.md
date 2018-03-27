@@ -61,7 +61,7 @@ git clone git@github.com:helmethair-co/currency-layer-api.git
 ## Built With
 
 * [kotlin](http://kotlinlang.org/) - Statically typed programming language for modern multiplatform applications
-* [gradle](https://maven.apache.org/) - Build tool
+* [gradle](http://gradle.org/) - Build tool
 * [jackson](https://github.com/FasterXML/jackson-module-kotlin/) - Serialization / deserialization
 * [fuel](https://github.com/kittinunf/Fuel) - Http networking
 
