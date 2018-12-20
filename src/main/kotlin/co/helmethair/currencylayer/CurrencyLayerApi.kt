@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.FuelError
 import com.github.kittinunf.fuel.core.FuelManager
 import com.github.kittinunf.fuel.core.Request
@@ -98,11 +99,8 @@ class CurrencyLayerApi(
 ) {
     private val jsonMapper: ObjectMapper = ObjectMapper().registerKotlinModule()
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd")
-
-    init {
-        val protocol = if (useSecureConnection) "https" else "http"
-        FuelManager.instance.basePath = "$protocol://apilayer.net/api/"
-    }
+    private val protocol =  if (useSecureConnection) "https" else "http"
+    private val basePath = "$protocol://apilayer.net/api/"
 
     /**
      * Returns a [ListResponse] object with all the supported currencies.
@@ -183,8 +181,7 @@ class CurrencyLayerApi(
     }
 
     private fun listRequest(): Request {
-        return Endpoints.LIST
-            .httpGet(
+        return Fuel.get("$basePath${Endpoints.LIST}",
                 parameters = listOf(
                     ParamFields.ACCESS_KEY to accessKey
                 )
@@ -192,8 +189,7 @@ class CurrencyLayerApi(
     }
 
     private fun convertRequest(from: String, to: String, amount: Double): Request {
-        return Endpoints.CONVERT
-            .httpGet(
+        return Fuel.get("$basePath${Endpoints.CONVERT}",
                 parameters = listOf(
                     ParamFields.ACCESS_KEY to accessKey,
                     ParamFields.FROM to from,
@@ -209,7 +205,7 @@ class CurrencyLayerApi(
         )
         if (currencies != null) params.add(ParamFields.CURRENCIES to currencies)
         if (source != null) params.add(ParamFields.SOURCE to source)
-        return Endpoints.LIVE.httpGet(parameters = params)
+        return Fuel.get("$basePath${Endpoints.LIVE}", parameters = params)
     }
 
     private fun historicalRequest(date: Date, currencies: String? = null, source: String? = null): Request {
@@ -219,7 +215,7 @@ class CurrencyLayerApi(
         )
         if (currencies != null) params.add(ParamFields.CURRENCIES to currencies)
         if (source != null) params.add(ParamFields.SOURCE to source)
-        return Endpoints.HISTORICAL.httpGet(parameters = params)
+        return Fuel.get("$basePath${Endpoints.HISTORICAL}", parameters = params)
     }
 
     private fun <T>calculateAsync(future: CompletableFuture<T>, block: (future: CompletableFuture<T>) -> CompletableFuture<T>): CompletableFuture<T> {

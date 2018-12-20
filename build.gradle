@@ -71,13 +71,6 @@ dokka {
     outputDirectory = "$buildDir/javadoc"
 }
 
-jar {
-    manifest {
-        attributes('Implementation-Title': project.name,
-                'Implementation-Version': project.version)
-    }
-}
-
 publishing {
     publications {
         maven(MavenPublication) {
